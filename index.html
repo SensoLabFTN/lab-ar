@@ -3,11 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorijske vežbe</title>
+  <title>AR Laboratorija</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 26px;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.5;
+      opacity: 0.95;
+    }
+
+    .step {
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px 0;
+      text-align: left;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 14px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      background: #00e0ff;
+      color: #003344;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #00c8e0;
+    }
+
+    .footer {
+      margin-top: 15px;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+  </style>
 </head>
-<body style="font-family: Arial; text-align: center; padding: 40px;">
-  <h1>Laboratorijske vežbe</h1>
-  <p>Ova stranica glumi aplikaciju.</p>
-  <p>Kasnije će ovde biti kamera i video.</p>
+
+<body>
+  <div class="app">
+    <h1>🔬 AR Laboratorijske vežbe</h1>
+
+    <p>
+      Ova stranica služi kao interaktivna laboratorijska aplikacija.
+    </p>
+
+    <div class="step">1️⃣ Klikni na dugme ispod</div>
+    <div class="step">2️⃣ Dozvoli pristup kameri</div>
+    <div class="step">3️⃣ Usmeri kameru ka slici u skripti</div>
+    <div class="step">4️⃣ Video objašnjenje će se pojaviti automatski</div>
+
+    <button onclick="alert('U sledećem koraku ovde ide kamera 📷')">
+      ▶ Pokreni laboratoriju
+    </button>
+
+    <div class="footer">
+      AMS Lab • Edukativni AR sistem
+    </div>
+  </div>
 </body>
 </html>
