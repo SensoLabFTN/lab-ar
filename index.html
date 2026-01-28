@@ -37,7 +37,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
 
     .logo {
@@ -51,17 +51,26 @@
       font-size: 22px;
     }
 
-  </style>
-</head>
+    h1 {
+      font-size: 22px;
+      margin: 0;
+      line-height: 1.2;
+    }
 
-<body>
-  <div class="app">
-    <div class="header">
-      <div class="logo">🧪</div>
-      <div>
-        <h1>Laboratorijske vežbe</h1>
-        <div class="subtitle">Multimedijalni edukativni sadržaj</div>
-      </div>
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    .exercise-title {
+      margin-top: 14px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #aeeaff;
+    <!-- OVAJ TEKST SE MENJA -->
+    <div class="exercise-title" id="exerciseTitle">
+      Izaberite laboratorijsku vežbu
     </div>
 
     <div class="instructions">
@@ -79,5 +88,21 @@
       © Edukativna platforma
     </div>
   </div>
+
+  <!-- LOGIKA ZA PROMENU TEKSTA -->
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const vezba = params.get("vezba");
+
+    const title = document.getElementById("exerciseTitle");
+
+    if (vezba === "1") {
+      title.textContent = "Vežba 1: Merenje pH vrednosti vode";
+    } else if (vezba === "2") {
+      title.textContent = "Vežba 2: Ispitivanje kvaliteta vode";
+    } else if (vezba === "3") {
+      title.textContent = "Vežba 3: Rad sa EC senzorom";
+    }
+  </script>
 </body>
 </html>
