@@ -1,203 +1,186 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorijske vežbe</title>
+<meta charset="UTF-8">
+<title>Laboratorijske vežbe – multimedijalni sadržaj</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<!-- A-Frame + AR.js -->
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: radial-gradient(circle at top, #2a3f6f, #0f172a);
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #000;
+}
 
-    .app {
-      background: rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(14px);
-      border-radius: 24px;
-      padding: 28px;
-      max-width: 420px;
-      width: 92%;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
-    }
+#ui {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(255,255,255,0.95);
+  padding: 15px;
+  box-sizing: border-box;
+  z-index: 10;
+}
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
+h1 {
+  margin: 0;
+  font-size: 20px;
+  text-align: center;
+}
 
-    .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #00e0ff, #4facfe);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-    }
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+}
 
-    h1 {
-      font-size: 22px;
-      margin: 0;
-    }
+.instructions {
+  margin-top: 10px;
+  font-size: 14px;
+}
 
-    .subtitle {
-      font-size: 14px;
-      opacity: 0.85;
-    }
+.step {
+  margin: 4px 0;
+}
 
-    .exercise-title {
-      margin: 14px 0 18px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #aeeaff;
-    }
+#status {
+  text-align: center;
+  margin-top: 8px;
+  font-weight: bold;
+  color: #007bff;
+}
 
-    .instructions {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
+#videoBox {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 480px;
+  display: none;
+  z-index: 10;
+}
 
-    .step {
-      background: rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-    }
+#videoBox video {
+  width: 100%;
+  border-radius: 14px;
+  background: black;
+}
 
-    .step span {
-      font-size: 18px;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 16px;
-      display: none;
-      background: black;
-      margin-bottom: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 15px;
-      font-size: 17px;
-      font-weight: 600;
-      border: none;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #00e0ff, #4facfe);
-      color: #002b36;
-      cursor: pointer;
-    }
-
-    .footer {
-      margin-top: 16px;
-      font-size: 12px;
-      text-align: center;
-      opacity: 0.7;
-    }
-  </style>
+#exitBtn {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 11;
+  display: none;
+}
+</style>
 </head>
 
 <body>
-  <div class="app">
-    <div class="header">
-      <div class="logo">🧪</div>
-      <div>
-        <h1>Laboratorijske vežbe</h1>
-        <div class="subtitle">Multimedijalni edukativni sadržaj</div>
-      </div>
-    </div>
 
-    <div class="exercise-title" id="exerciseTitle">
-      Izaberite laboratorijsku vežbu:
-    </div>
+<!-- UI -->
+<div id="ui">
+  <h1>Laboratorijske vežbe</h1>
+  <div class="subtitle">Multimedijalni sadržaj</div>
 
-    <div class="instructions" id="instructions">
-      <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
-      <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
-      <div class="step"><span>3️⃣</span> Usmeri kameru ka slici u skripti</div>
-      <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
-    </div>
-
-    <video id="camera" autoplay playsinline></video>
-
-    <button id="toggleBtn" onclick="toggleCamera()">
-      ▶️ Pokreni vežbu
-    </button>
-
-    <div class="footer">
-      © Edukativna platforma
-    </div>
+  <div class="instructions" id="instructions">
+    <div class="step">1️⃣ Usmeri kameru ka slici u skripti</div>
+    <div class="step">2️⃣ Sačekaj prepoznavanje</div>
+    <div class="step">3️⃣ Video vežbe će se automatski pokrenuti</div>
   </div>
 
-  <script>
-    /* PROMENA NAZIVA VEŽBE */
-    const params = new URLSearchParams(window.location.search);
-    const vezba = params.get("vezba");
-    const title = document.getElementById("exerciseTitle");
+  <div id="status">Čekam marker…</div>
+</div>
 
-    if (vezba === "1") {
-      title.textContent = "Vežba 1: Merenje pH vrednosti vode";
-    } else if (vezba === "2") {
-      title.textContent = "Vežba 2: Ispitivanje kvaliteta vode";
-    } else if (vezba === "3") {
-      title.textContent = "Vežba 3: Rad sa EC senzorom";
-    }
+<!-- AR SCENA -->
+<a-scene
+  embedded
+  arjs="sourceType: webcam; debugUIEnabled: false;"
+  vr-mode-ui="enabled: false">
 
-    /* LOGIKA ZA DUGME */
-    let stream = null;
-    let cameraOn = false;
+  <!-- MARKER VEŽBA 1 -->
+  <a-marker
+    id="marker1"
+    type="pattern"
+    url="markers/vezba1.patt">
+  </a-marker>
 
-    async function toggleCamera() {
-      const video = document.getElementById("camera");
-      const instructions = document.getElementById("instructions");
-      const button = document.getElementById("toggleBtn");
+  <!-- MARKER VEŽBA 2 -->
+  <a-marker
+    id="marker2"
+    type="pattern"
+    url="markers/vezba2.patt">
+  </a-marker>
 
-      if (!cameraOn) {
-        // UKLJUČI KAMERU
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-            audio: false
-          });
+  <a-entity camera></a-entity>
+</a-scene>
 
-          video.srcObject = stream;
-          video.style.display = "block";
-          instructions.style.display = "none";
+<!-- VIDEO -->
+<div id="videoBox">
+  <video id="lessonVideo" controls></video>
+</div>
 
-          button.textContent = "⏹ Zatvori";
-          cameraOn = true;
-        } catch (err) {
-          alert("Kamera nije dostupna ili dozvola nije data.");
-        }
-      } else {
-        // ISKLJUČI KAMERU
-        stream.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
-        video.style.display = "none";
-        instructions.style.display = "grid";
+<!-- EXIT -->
+<button id="exitBtn" onclick="stopVideo()">✖</button>
 
-        button.textContent = "▶ Pokreni vežbu";
-        cameraOn = false;
-      }
-    }
-  </script>
+<script>
+const statusText = document.getElementById("status");
+const videoBox = document.getElementById("videoBox");
+const video = document.getElementById("lessonVideo");
+const exitBtn = document.getElementById("exitBtn");
+
+let currentVideo = null;
+
+function playVideo(src, label) {
+  if (currentVideo === src) return;
+
+  currentVideo = src;
+  video.src = src;
+  videoBox.style.display = "block";
+  exitBtn.style.display = "block";
+  statusText.textContent = "Prepoznata vežba: " + label;
+  video.play();
+}
+
+function stopVideo() {
+  video.pause();
+  videoBox.style.display = "none";
+  exitBtn.style.display = "none";
+  statusText.textContent = "Čekam marker…";
+  currentVideo = null;
+}
+
+/* VEŽBA 1 */
+document.getElementById("marker1").addEventListener("markerFound", () => {
+  playVideo("videos/vezba1.mp4", "Vežba 1 – merenje pH vrednosti");
+});
+
+document.getElementById("marker1").addEventListener("markerLost", () => {
+  stopVideo();
+});
+
+/* VEŽBA 2 */
+document.getElementById("marker2").addEventListener("markerFound", () => {
+  playVideo("videos/vezba2.mp4", "Vežba 2 – ispitivanje kvaliteta vode");
+});
+
+document.getElementById("marker2").addEventListener("markerLost", () => {
+  stopVideo();
+});
+</script>
+
 </body>
 </html>
