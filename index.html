@@ -60,16 +60,18 @@
     }
 
     .exercise-title {
-      margin: 14px 0 20px;
+      margin: 14px 0 18px;
       font-size: 16px;
       font-weight: 600;
       color: #aeeaff;
     }
+
     .instructions {
       display: grid;
       gap: 10px;
-      margin-bottom: 22px;
+      margin-bottom: 16px;
     }
+
     .step {
       background: rgba(255, 255, 255, 0.14);
       border-radius: 14px;
@@ -83,6 +85,15 @@
     .step span {
       font-size: 18px;
     }
+
+    video {
+      width: 100%;
+      border-radius: 16px;
+      display: none;
+      background: black;
+      margin-bottom: 16px;
+    }
+
     button {
       width: 100%;
       padding: 15px;
@@ -93,15 +104,6 @@
       background: linear-gradient(135deg, #00e0ff, #4facfe);
       color: #002b36;
       cursor: pointer;
-      margin-bottom: 15px;
-    }
-
-    video {
-      width: 100%;
-      border-radius: 16px;
-      display: none;
-      margin-top: 10px;
-      background: black;
     }
 
     .footer {
@@ -123,20 +125,26 @@
       </div>
     </div>
 
+    <!-- NAZIV VEŽBE (MENJA SE PREKO LINKA) -->
     <div class="exercise-title" id="exerciseTitle">
-      Izaberite laboratorijsku vežbu:
+      Izaberite laboratorijsku vežbu
     </div>
-    <!-- UPUTSTVO U 4 KORAKA -->
-    <div class="instructions">
+
+    <!-- INSTRUKCIJE -->
+    <div class="instructions" id="instructions">
       <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
       <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
       <div class="step"><span>3️⃣</span> Usmeri kameru ka slici u skripti</div>
       <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
     </div>
-    <button onclick="startCamera()">▶ Pokreni vežbu</button>
 
-    <!-- KAMERA -->
+    <!-- KAMERA (ZAMENJUJE INSTRUKCIJE) -->
     <video id="camera" autoplay playsinline></video>
+
+    <!-- DUGME OSTAJE DOLE -->
+    <button id="startBtn" onclick="startCamera()">
+      ▶ Pokreni vežbu
+    </button>
 
     <div class="footer">
       © Edukativna platforma
@@ -160,6 +168,10 @@
     /* UKLJUČIVANJE KAMERE */
     async function startCamera() {
       const video = document.getElementById("camera");
+      const instructions = document.getElementById("instructions");
+
+      // sakrij instrukcije
+      instructions.style.display = "none";
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
