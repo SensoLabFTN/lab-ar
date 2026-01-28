@@ -125,12 +125,10 @@
       </div>
     </div>
 
-    <!-- NAZIV VEŽBE (MENJA SE PREKO LINKA) -->
     <div class="exercise-title" id="exerciseTitle">
       Izaberite laboratorijsku vežbu
     </div>
 
-    <!-- INSTRUKCIJE -->
     <div class="instructions" id="instructions">
       <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
       <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
@@ -138,11 +136,9 @@
       <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
     </div>
 
-    <!-- KAMERA (ZAMENJUJE INSTRUKCIJE) -->
     <video id="camera" autoplay playsinline></video>
 
-    <!-- DUGME OSTAJE DOLE -->
-    <button id="startBtn" onclick="startCamera()">
+    <button id="toggleBtn" onclick="toggleCamera()">
       ▶ Pokreni vežbu
     </button>
 
@@ -152,7 +148,7 @@
   </div>
 
   <script>
-    /* PROMENA NAZIVA VEŽBE PREKO LINKA */
+    /* PROMENA NAZIVA VEŽBE */
     const params = new URLSearchParams(window.location.search);
     const vezba = params.get("vezba");
     const title = document.getElementById("exerciseTitle");
@@ -165,24 +161,41 @@
       title.textContent = "Vežba 3: Rad sa EC senzorom";
     }
 
-    /* UKLJUČIVANJE KAMERE */
-    async function startCamera() {
+    /* LOGIKA ZA DUGME */
+    let stream = null;
+    let cameraOn = false;
+
+    async function toggleCamera() {
       const video = document.getElementById("camera");
       const instructions = document.getElementById("instructions");
+      const button = document.getElementById("toggleBtn");
 
-      // sakrij instrukcije
-      instructions.style.display = "none";
+      if (!cameraOn) {
+        // UKLJUČI KAMERU
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false
+          });
 
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-          audio: false
-        });
+          video.srcObject = stream;
+          video.style.display = "block";
+          instructions.style.display = "none";
 
-        video.srcObject = stream;
-        video.style.display = "block";
-      } catch (err) {
-        alert("Kamera nije dostupna ili dozvola nije data.");
+          button.textContent = "⏹ Zatvori kameru";
+          cameraOn = true;
+        } catch (err) {
+          alert("Kamera nije dostupna ili dozvola nije data.");
+        }
+      } else {
+        // ISKLJUČI KAMERU
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+        video.style.display = "none";
+        instructions.style.display = "grid";
+
+        button.textContent = "▶ Pokreni vežbu";
+        cameraOn = false;
       }
     }
   </script>
