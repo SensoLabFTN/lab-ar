@@ -24,13 +24,11 @@
     .app {
       background: rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border-radius: 24px;
       padding: 28px;
       max-width: 420px;
       width: 92%;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.18);
     }
 
     .header {
@@ -54,7 +52,6 @@
     h1 {
       font-size: 22px;
       margin: 0;
-      line-height: 1.2;
     }
 
     .subtitle {
@@ -63,31 +60,10 @@
     }
 
     .exercise-title {
-      margin-top: 14px;
-      margin-bottom: 20px;
+      margin: 14px 0 20px;
       font-size: 16px;
       font-weight: 600;
       color: #aeeaff;
-    }
-
-    .instructions {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 22px;
-    }
-
-    .step {
-      background: rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-    }
-
-    .step span {
-      font-size: 18px;
     }
 
     button {
@@ -100,22 +76,19 @@
       background: linear-gradient(135deg, #00e0ff, #4facfe);
       color: #002b36;
       cursor: pointer;
-      box-shadow: 0 10px 25px rgba(0, 224, 255, 0.35);
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      margin-bottom: 15px;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 30px rgba(0, 224, 255, 0.45);
-    }
-
-    button:active {
-      transform: translateY(0);
-      box-shadow: 0 8px 18px rgba(0, 224, 255, 0.3);
+    video {
+      width: 100%;
+      border-radius: 16px;
+      display: none;
+      margin-top: 10px;
+      background: black;
     }
 
     .footer {
-      margin-top: 18px;
+      margin-top: 16px;
       font-size: 12px;
       text-align: center;
       opacity: 0.7;
@@ -133,32 +106,24 @@
       </div>
     </div>
 
-    <!-- OVAJ TEKST SE MENJA -->
     <div class="exercise-title" id="exerciseTitle">
       Izaberite laboratorijsku vežbu
     </div>
 
-    <div class="instructions">
-      <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
-      <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
-      <div class="step"><span>3️⃣</span> Usmeri kameru ka slici u skripti</div>
-      <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
-    </div>
+    <button onclick="startCamera()">▶ Pokreni vežbu</button>
 
-    <button onclick="alert('Sledeći korak: uključivanje kamere 📷')">
-      ▶ Pokreni vežbu
-    </button>
+    <!-- KAMERA -->
+    <video id="camera" autoplay playsinline></video>
 
     <div class="footer">
       © Edukativna platforma
     </div>
   </div>
 
-  <!-- LOGIKA ZA PROMENU TEKSTA -->
   <script>
+    /* PROMENA NAZIVA VEŽBE PREKO LINKA */
     const params = new URLSearchParams(window.location.search);
     const vezba = params.get("vezba");
-
     const title = document.getElementById("exerciseTitle");
 
     if (vezba === "1") {
@@ -167,6 +132,23 @@
       title.textContent = "Vežba 2: Ispitivanje kvaliteta vode";
     } else if (vezba === "3") {
       title.textContent = "Vežba 3: Rad sa EC senzorom";
+    }
+
+    /* UKLJUČIVANJE KAMERE */
+    async function startCamera() {
+      const video = document.getElementById("camera");
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+          audio: false
+        });
+
+        video.srcObject = stream;
+        video.style.display = "block";
+      } catch (err) {
+        alert("Kamera nije dostupna ili dozvola nije data.");
+      }
     }
   </script>
 </body>
