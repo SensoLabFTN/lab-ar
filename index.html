@@ -83,33 +83,34 @@
 
   <script>
     let cameraOn = false;
-    let html5QrcodeScanner;
+    const qrReader = document.getElementById("qr-reader");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const button = document.getElementById("toggleBtn");
+    const instructions = document.getElementById("instructions");
+
+    // Instanciraj QR skener van funkcije
+    const html5QrcodeScanner = new Html5Qrcode("qr-reader");
 
     function toggleCamera() {
-      const qrReader = document.getElementById("qr-reader");
-      const instructions = document.getElementById("instructions");
-      const button = document.getElementById("toggleBtn");
-      const videoPlayer = document.getElementById("videoPlayer");
-
       if (!cameraOn) {
-        // Uključi QR kameru
+        // Uključi kameru
         qrReader.style.display = "block";
         instructions.style.display = "none";
         button.textContent = "⏹ Zatvori kameru";
 
-        html5QrcodeScanner = new Html5Qrcode("qr-reader");
         html5QrcodeScanner.start(
           { facingMode: "environment" },
           { fps: 10, qrbox: 250 },
           qrCodeMessage => {
-            // Kada QR kod bude skeniran, učitaj video
+            // Kada QR kod bude skeniran
             html5QrcodeScanner.stop().then(() => {
               qrReader.style.display = "none";
-            });
-            videoPlayer.src = `videos/vezba${extractVezbaNumber(qrCodeMessage)}.mp4`;
+            }).catch(err => console.error(err));
+
+            const vezba = extractVezbaNumber(qrCodeMessage);
+            videoPlayer.src = `videos/vezba${vezba}.mp4`;
             videoPlayer.style.display = "block";
-            document.getElementById("exerciseTitle").textContent =
-              `Vežba ${extractVezbaNumber(qrCodeMessage)}`;
+            document.getElementById("exerciseTitle").textContent = `Vežba ${vezba}`;
             button.textContent = "▶ Pokreni vežbu";
             cameraOn = false;
           }
@@ -117,9 +118,11 @@
 
         cameraOn = true;
       } else {
-        // Isključi QR kameru
-        html5QrcodeScanner.stop().catch(err => console.error(err));
-        qrReader.style.display = "none";
+        // Isključi kameru
+        html5QrcodeScanner.stop().then(() => {
+          qrReader.style.display = "none";
+        }).catch(err => console.error(err));
+
         instructions.style.display = "grid";
         button.textContent = "▶ Pokreni vežbu";
         cameraOn = false;
@@ -127,7 +130,6 @@
     }
 
     function extractVezbaNumber(url) {
-      // Izvlači broj vežbe iz URL-a ?vezba=X
       const match = url.match(/vezba=(\d+)/);
       return match ? match[1] : "1";
     }
