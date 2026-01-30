@@ -1,117 +1,52 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Laboratorijske vežbe</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  <!-- AR.js -->
+  <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.5/aframe/build/aframe-ar.min.js"></script>
 
+  <style>
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       background: radial-gradient(circle at top, #2a3f6f, #0f172a);
-      color: #ffffff;
+      color: #fff;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
     .app {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255,255,255,0.12);
       backdrop-filter: blur(14px);
       border-radius: 24px;
       padding: 28px;
-      max-width: 420px;
-      width: 92%;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 10px;
-    }
-
-    .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #00e0ff, #4facfe);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-    }
-
-    h1 {
-      font-size: 22px;
-      margin: 0;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      opacity: 0.85;
-    }
-
-    .exercise-title {
-      margin: 14px 0 18px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #aeeaff;
-    }
-
-    .instructions {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .step {
-      background: rgba(255, 255, 255, 0.14);
-      border-radius: 14px;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-    }
-
-    .step span {
-      font-size: 18px;
-    }
-
-    video {
       width: 100%;
-      border-radius: 16px;
-      display: none;
-      background: black;
-      margin-bottom: 16px;
+      max-width: 390px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.35);
     }
-
+    .header { display:flex; gap:12px; align-items:center; }
+    .logo { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; }
+    h1 { margin:0; font-size:22px; }
+    .subtitle { font-size:14px; opacity:.85; }
+    .exercise-title { margin:14px 0 18px; font-size:16px; font-weight:600; color:#aeeaff; }
+    .instructions { display:grid; gap:10px; margin-bottom:16px; }
+    .step { background:rgba(255,255,255,.14); border-radius:14px; padding:12px 14px; display:flex; gap:10px; }
+    video { width:100%; border-radius:16px; margin-bottom:16px; display:none; background:black; }
     button {
-      width: 100%;
-      padding: 15px;
-      font-size: 17px;
-      font-weight: 600;
-      border: none;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #00e0ff, #4facfe);
-      color: #002b36;
-      cursor: pointer;
+      width:100%; padding:15px; font-size:17px; font-weight:600;
+      border:none; border-radius:16px;
+      background:linear-gradient(135deg,#00e0ff,#4facfe);
+      color:#002b36; cursor:pointer;
     }
+    .footer { margin-top:16px; font-size:12px; text-align:center; opacity:.7; }
 
-    .footer {
-      margin-top: 16px;
-      font-size: 12px;
-      text-align: center;
-      opacity: 0.7;
-    }
+    /* AR scena je skrivena */
+    a-scene { position: fixed; inset: 0; z-index: -1; }
   </style>
 </head>
 
@@ -125,78 +60,84 @@
       </div>
     </div>
 
-    <div class="exercise-title" id="exerciseTitle">
-      Izaberite laboratorijsku vežbu
-    </div>
+    <div class="exercise-title">Usmeri kameru ka slici u praktikumu</div>
 
     <div class="instructions" id="instructions">
-      <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
-      <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
-      <div class="step"><span>3️⃣</span> Usmeri kameru ka slici u skripti</div>
-      <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
+      <div class="step">1️⃣ Klikni na „Pokreni vežbu“</div>
+      <div class="step">2️⃣ Dozvoli pristup kameri</div>
+      <div class="step">3️⃣ Usmeri kameru ka slici</div>
+      <div class="step">4️⃣ Video se automatski pokreće</div>
     </div>
 
-    <video id="camera" autoplay playsinline></video>
+    <!-- Video koji zamenjuje kameru -->
+    <video id="exerciseVideo" controls playsinline></video>
 
-    <button id="toggleBtn" onclick="toggleCamera()">
-      ▶️ Pokreni vežbu
-    </button>
+    <button id="toggleBtn" onclick="startAR()">▶ Pokreni vežbu</button>
 
-    <div class="footer">
-      © Edukativna platforma
-    </div>
+    <div class="footer">© Edukativna platforma</div>
   </div>
 
-  <script>
-    /* PROMENA NAZIVA VEŽBE */
-    const params = new URLSearchParams(window.location.search);
-    const vezba = params.get("vezba");
-    const title = document.getElementById("exerciseTitle");
+  <!-- NEVIDLJIVA AR SCENA -->
+  <a-scene
+    embedded
+    arjs="sourceType: webcam; facingMode: environment; debugUIEnabled: false;"
+  >
+    <a-camera></a-camera>
 
-    if (vezba === "1") {
-      title.textContent = "Vežba 1: Merenje pH vrednosti vode";
-    } else if (vezba === "2") {
-      title.textContent = "Vežba 2: Ispitivanje kvaliteta vode";
-    } else if (vezba === "3") {
-      title.textContent = "Vežba 3: Rad sa EC senzorom";
-    }
+    <!-- 25 NEVIDLJIVIH MARKERA -->
+    <!-- svaki marker zove istu funkciju sa svojim ID -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const scene = document.querySelector("a-scene");
 
-    /* LOGIKA ZA DUGME */
-    let stream = null;
-    let cameraOn = false;
+        for (let i = 1; i <= 25; i++) {
+          const num = String(i).padStart(2, "0");
+          const marker = document.createElement("a-marker");
+          marker.setAttribute("type", "pattern");
+          marker.setAttribute("url", `markers/vezba${num}.patt`);
+          marker.setAttribute("id", `vezba${num}`);
+          marker.setAttribute("emitevents", "true");
 
-    async function toggleCamera() {
-      const video = document.getElementById("camera");
-      const instructions = document.getElementById("instructions");
-      const button = document.getElementById("toggleBtn");
-
-      if (!cameraOn) {
-        // UKLJUČI KAMERU
-        try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
-            audio: false
+          marker.addEventListener("markerFound", () => {
+            onMarkerDetected(`vezba${num}`);
           });
 
-          video.srcObject = stream;
-          video.style.display = "block";
-          instructions.style.display = "none";
-
-          button.textContent = "⏹ Zatvori kameru";
-          cameraOn = true;
-        } catch (err) {
-          alert("Kamera nije dostupna ili dozvola nije data.");
+          scene.appendChild(marker);
         }
-      } else {
-        // ISKLJUČI KAMERU
-        stream.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
-        video.style.display = "none";
-        instructions.style.display = "grid";
+      });
+    </script>
+  </a-scene>
 
-        button.textContent = "▶️ Pokreni vežbu";
-        cameraOn = false;
-      }
+  <script>
+    const videoEl = document.getElementById("exerciseVideo");
+    const instructions = document.getElementById("instructions");
+    const button = document.getElementById("toggleBtn");
+
+    let active = false;
+
+    function startAR() {
+      instructions.style.display = "none";
+      button.textContent = "⏳ Tražim sliku...";
+      active = true;
+    }
+
+    function onMarkerDetected(markerId) {
+      if (!active) return;
+      active = false;
+
+      const videoSrc = `videos/${markerId}.mp4`;
+
+      // ugasi AR kameru
+      const scene = document.querySelector("a-scene");
+      scene.parentNode.removeChild(scene);
+
+      // pusti video
+      videoEl.src = videoSrc;
+      videoEl.style.display = "block";
+      videoEl.play();
+
+      button.textContent = "⏹ Zatvori video";
+      button.onclick = () => window.location.reload();
     }
   </script>
 </body>
