@@ -3,81 +3,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorijske vežbe AR</title>
+  <title>Laboratorijske vežbe</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.7/dist/mindar-image.prod.js"></script>
+  <!-- HTML5 QR Code library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
 
   <style>
-    body { margin: 0; font-family: sans-serif; background: #0f172a; color: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; }
-    .app { width: 90%; max-width: 420px; text-align: center; background: rgba(255,255,255,0.1); padding: 24px; border-radius: 20px; backdrop-filter: blur(14px); }
-    h1 { margin:0; font-size:22px; }
-    .subtitle { font-size:14px; opacity:0.8; margin-bottom:16px; }
-    button { width:100%; padding:12px; font-size:16px; border:none; border-radius:12px; background:linear-gradient(135deg,#00e0ff,#4facfe); color:#002b36; cursor:pointer; }
-    video { width:100%; border-radius:12px; display:none; margin-top:16px; }
-    .footer { font-size:12px; opacity:0.6; margin-top:12px; }
-  </style>
-</head>
-<body>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+    #qr-reader { width: 100%; display: none; margin-bottom: 16px; }
+    video, #videoPlayer {
+    <div class="exercise-title" id="exerciseTitle">
+      Izaberite laboratorijsku vežbu
+    </div>
 
-<div class="app">
-  <h1>Laboratorijske vežbe</h1>
-  <div class="subtitle">Multimedijalni edukativni sadržaj</div>
+    <div class="instructions" id="instructions">
+      <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
+      <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
+      <div class="step"><span>3️⃣</span> Usmeri kameru ka QR kodu</div>
+      <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
+    </div>
 
-  <div id="exerciseTitle">Izaberite vežbu</div>
-  <button id="startBtn">▶ Pokreni vežbu</button>
+    <!-- QR code scanner -->
+    <div id="qr-reader"></div>
 
-  <video id="videoPlayer" controls></video>
-  <div class="footer">© Edukativna platforma</div>
-</div>
+    <!-- Video -->
+    <video id="videoPlayer" controls></video>
 
-<script>
-const startBtn = document.getElementById("startBtn");
-const videoPlayer = document.getElementById("videoPlayer");
-const exerciseTitle = document.getElementById("exerciseTitle");
+    <button id="toggleBtn" onclick="toggleCamera()">▶ Pokreni vežbu</button>
 
-let mindarThree;
-let stream;
+    <div class="footer">
+      © Edukativna platforma
+    </div>
+  </div>
 
-startBtn.addEventListener("click", async () => {
-  startBtn.disabled = true;
+  <script>
+    let cameraOn = false;
+    let html5QrScanner = null;
 
-  // Pokretanje AR prepoznavanja
-  mindarThree = new window.MINDAR.IMAGE.MindARThree({
-    container: document.body,
-    imageTargetSrc: "markers/targets.mind",
-    uiScanning: true,
-    uiLoading: true,
-  });
+    const button = document.getElementById("toggleBtn");
+    const instructions = document.getElementById("instructions");
+    const qrReader = document.getElementById("qr-reader");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const exerciseTitle = document.getElementById("exerciseTitle");
 
-  const {renderer, scene, camera} = mindarThree;
+    function toggleCamera() {
+      if (!cameraOn) {
+        // Pokreni QR skener
+        qrReader.style.display = "block";
+        instructions.style.display = "none";
 
-  // Napravimo video elemente za sve marker-e
-  const videoElements = {};
-  for(let i=1;i<=25;i++){
-    const video = document.createElement("video");
-    video.src = `videos/vezba${i}.mp4`;
-    video.crossOrigin="anonymous";
-    video.loop=false;
-    video.muted=false;
-    video.style.display="none";
-    document.body.appendChild(video);
-    videoElements[`vezba${i}`] = video;
-  }
+        html5QrScanner = new Html5Qrcode("qr-reader");
 
-  // Event kada se marker prepozna
-  mindarThree.on("targetFound", (index)=>{
-    const code = `vezba${index+1}`;
-    exerciseTitle.textContent = `Vežba ${index+1}`;
-    const video = videoElements[code];
-    if(video){
-      video.style.display="block";
-      video.play();
+        html5QrScanner.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: 250
+          },
+          qrCodeMessage => {
+            // QR kod je prepoznat
+            const code = qrCodeMessage.trim();
+            handleQRCode(code);
+            stopCamera();
+          },
+          errorMessage => {
+            // ne radi ništa, samo greške u konzoli
+            console.log("QR scan error:", errorMessage);
+          }
+        ).catch(err => {
+          alert("Kamera nije dostupna ili dozvola nije data.");
+        });
+
+        button.textContent = "⏹ Zatvori kameru";
+        cameraOn = true;
+
+      } else {
+        stopCamera();
+      }
     }
-  });
 
-  await mindarThree.start();
-});
-</script>
+    function stopCamera() {
+      if (html5QrScanner) {
+        html5QrScanner.stop().then(() => {
+          html5QrScanner.clear();
+        }).catch(err => console.log(err));
+      }
+      qrReader.style.display = "none";
+      instructions.style.display = "grid";
+      button.textContent = "▶ Pokreni vežbu";
+      cameraOn = false;
+    }
 
+    function handleQRCode(code) {
+      // Primer: code = "vezba1", "vezba2" ...
+      const match = code.match(/vezba(\d+)/i);
+      if (match) {
+        const num = match[1];
+        exerciseTitle.textContent = `Vežba ${num}`;
+        videoPlayer.src = `videos/vezba${num}.mp4`;
+        videoPlayer.style.display = "block";
+        videoPlayer.play();
+      } else {
+        alert("Nepoznat QR kod");
+      }
+    }
+  </script>
 </body>
 </html>
