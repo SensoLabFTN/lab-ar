@@ -6,7 +6,10 @@
   <title>Laboratorijske vežbe</title>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
@@ -17,6 +20,7 @@
       justify-content: center;
       align-items: center;
     }
+
     .app {
       background: rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(14px);
@@ -25,18 +29,71 @@
       max-width: 420px;
       width: 92%;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
-      text-align: center;
     }
-    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; justify-content: center; }
-    .logo { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-    h1 { font-size: 22px; margin: 0; }
-    .subtitle { font-size: 14px; opacity: 0.85; }
-    .exercise-title { margin: 14px 0 18px; font-size: 16px; font-weight: 600; color: #aeeaff; }
-    .instructions { display: grid; gap: 10px; margin-bottom: 16px; }
-    .step { background: rgba(255, 255, 255, 0.14); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 15px; }
-    .step span { font-size: 18px; }
-    #qr-reader { width: 100%; display: none; margin-bottom: 16px; }
-    video { width: 100%; border-radius: 16px; display: none; background: black; margin-bottom: 16px; }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00e0ff, #4facfe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    .exercise-title {
+      margin: 14px 0 18px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #aeeaff;
+    }
+
+    .instructions {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .step {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+    }
+
+    .step span {
+      font-size: 18px;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 16px;
+      display: none;
+      background: black;
+      margin-bottom: 16px;
+    }
+
     button {
       width: 100%;
       padding: 15px;
@@ -48,12 +105,16 @@
       color: #002b36;
       cursor: pointer;
     }
-    .footer { margin-top: 16px; font-size: 12px; text-align: center; opacity: 0.7; }
-  </style>
 
-  <!-- HTML5 QR Code library -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+    .footer {
+      margin-top: 16px;
+      font-size: 12px;
+      text-align: center;
+      opacity: 0.7;
+    }
+  </style>
 </head>
+
 <body>
   <div class="app">
     <div class="header">
@@ -64,74 +125,78 @@
       </div>
     </div>
 
-    <div class="exercise-title" id="exerciseTitle">Izaberite laboratorijsku vežbu</div>
+    <div class="exercise-title" id="exerciseTitle">
+      Izaberite laboratorijsku vežbu
+    </div>
 
     <div class="instructions" id="instructions">
       <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
       <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
-      <div class="step"><span>3️⃣</span> Skeniraj QR kod vežbe</div>
+      <div class="step"><span>3️⃣</span> Usmeri kameru ka slici u skripti</div>
       <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
     </div>
 
-    <div id="qr-reader"></div>
-    <video id="videoPlayer" controls></video>
+    <video id="camera" autoplay playsinline></video>
 
-    <button id="toggleBtn" onclick="toggleCamera()">▶ Pokreni vežbu</button>
+    <button id="toggleBtn" onclick="toggleCamera()">
+      ▶ Pokreni vežbu
+    </button>
 
-    <div class="footer">© Edukativna platforma</div>
+    <div class="footer">
+      © Edukativna platforma
+    </div>
   </div>
 
   <script>
+    /* PROMENA NAZIVA VEŽBE */
+    const params = new URLSearchParams(window.location.search);
+    const vezba = params.get("vezba");
+    const title = document.getElementById("exerciseTitle");
+
+    if (vezba === "1") {
+      title.textContent = "Vežba 1: Merenje pH vrednosti vode";
+    } else if (vezba === "2") {
+      title.textContent = "Vežba 2: Ispitivanje kvaliteta vode";
+    } else if (vezba === "3") {
+      title.textContent = "Vežba 3: Rad sa EC senzorom";
+    }
+
+    /* LOGIKA ZA DUGME */
+    let stream = null;
     let cameraOn = false;
-    const qrReader = document.getElementById("qr-reader");
-    const videoPlayer = document.getElementById("videoPlayer");
-    const button = document.getElementById("toggleBtn");
-    const instructions = document.getElementById("instructions");
 
-    // Instanciraj QR skener van funkcije
-    const html5QrcodeScanner = new Html5Qrcode("qr-reader");
+    async function toggleCamera() {
+      const video = document.getElementById("camera");
+      const instructions = document.getElementById("instructions");
+      const button = document.getElementById("toggleBtn");
 
-    function toggleCamera() {
       if (!cameraOn) {
-        // Uključi kameru
-        qrReader.style.display = "block";
-        instructions.style.display = "none";
-        button.textContent = "⏹ Zatvori kameru";
+        // UKLJUČI KAMERU
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "environment" },
+            audio: false
+          });
 
-        html5QrcodeScanner.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
-          qrCodeMessage => {
-            // Kada QR kod bude skeniran
-            html5QrcodeScanner.stop().then(() => {
-              qrReader.style.display = "none";
-            }).catch(err => console.error(err));
+          video.srcObject = stream;
+          video.style.display = "block";
+          instructions.style.display = "none";
 
-            const vezba = extractVezbaNumber(qrCodeMessage);
-            videoPlayer.src = `videos/vezba${vezba}.mp4`;
-            videoPlayer.style.display = "block";
-            document.getElementById("exerciseTitle").textContent = `Vežba ${vezba}`;
-            button.textContent = "▶ Pokreni vežbu";
-            cameraOn = false;
-          }
-        ).catch(err => console.error(err));
-
-        cameraOn = true;
+          button.textContent = "⏹ Zatvori kameru";
+          cameraOn = true;
+        } catch (err) {
+          alert("Kamera nije dostupna ili dozvola nije data.");
+        }
       } else {
-        // Isključi kameru
-        html5QrcodeScanner.stop().then(() => {
-          qrReader.style.display = "none";
-        }).catch(err => console.error(err));
-
+        // ISKLJUČI KAMERU
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+        video.style.display = "none";
         instructions.style.display = "grid";
+
         button.textContent = "▶ Pokreni vežbu";
         cameraOn = false;
       }
-    }
-
-    function extractVezbaNumber(url) {
-      const match = url.match(/vezba=(\d+)/);
-      return match ? match[1] : "1";
     }
   </script>
 </body>
