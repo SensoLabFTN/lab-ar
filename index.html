@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laboratorijske vežbe</title>
 
+  <!-- HTML5 QR Code library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.7/html5-qrcode.min.js"></script>
+
   <style>
     * { box-sizing: border-box; }
     body {
@@ -25,17 +28,54 @@
       max-width: 420px;
       width: 92%;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
-      text-align: center;
     }
-    .header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; justify-content: center; }
-    .logo { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #00e0ff, #4facfe); display: flex; align-items: center; justify-content: center; font-size: 22px; }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00e0ff, #4facfe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
     h1 { font-size: 22px; margin: 0; }
     .subtitle { font-size: 14px; opacity: 0.85; }
-    .exercise-title { margin: 14px 0 18px; font-size: 16px; font-weight: 600; color: #aeeaff; }
-    .instructions { display: grid; gap: 10px; margin-bottom: 16px; }
-    .step { background: rgba(255, 255, 255, 0.14); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 15px; }
+    .exercise-title {
+      margin: 14px 0 18px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #aeeaff;
+    }
+    .instructions {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .step {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+    }
     .step span { font-size: 18px; }
-    video { width: 100%; border-radius: 16px; display: none; background: black; margin-bottom: 16px; }
+    #qr-reader { width: 100%; display: none; margin-bottom: 16px; }
+    video, #videoPlayer {
+      width: 100%;
+      border-radius: 16px;
+      display: none;
+      background: black;
+      margin-bottom: 16px;
+    }
     button {
       width: 100%;
       padding: 15px;
@@ -47,12 +87,15 @@
       color: #002b36;
       cursor: pointer;
     }
-    .footer { margin-top: 16px; font-size: 12px; text-align: center; opacity: 0.7; }
+    .footer {
+      margin-top: 16px;
+      font-size: 12px;
+      text-align: center;
+      opacity: 0.7;
+    }
   </style>
-
-  <!-- QR Code library -->
-  <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
 </head>
+
 <body>
   <div class="app">
     <div class="header">
@@ -70,16 +113,17 @@
     <div class="instructions" id="instructions">
       <div class="step"><span>1️⃣</span> Klikni na dugme ispod</div>
       <div class="step"><span>2️⃣</span> Dozvoli pristup kameri</div>
-      <div class="step"><span>3️⃣</span> Skeniraj QR kod vežbe</div>
+      <div class="step"><span>3️⃣</span> Usmeri kameru ka QR kodu</div>
       <div class="step"><span>4️⃣</span> Video objašnjenje će se pojaviti</div>
     </div>
 
-    <div id="qr-reader" style="width:100%; display:none; margin-bottom:16px;"></div>
+    <!-- QR code scanner -->
+    <div id="qr-reader"></div>
+
+    <!-- Video -->
     <video id="videoPlayer" controls></video>
 
-    <button id="toggleBtn" onclick="toggleCamera()">
-      ▶ Pokreni vežbu
-    </button>
+    <button id="toggleBtn" onclick="toggleCamera()">▶ Pokreni vežbu</button>
 
     <div class="footer">
       © Edukativna platforma
@@ -88,57 +132,73 @@
 
   <script>
     let cameraOn = false;
-    let html5QrcodeScanner = null;
+    let html5QrScanner = null;
 
+    const button = document.getElementById("toggleBtn");
     const instructions = document.getElementById("instructions");
     const qrReader = document.getElementById("qr-reader");
     const videoPlayer = document.getElementById("videoPlayer");
-    const button = document.getElementById("toggleBtn");
     const exerciseTitle = document.getElementById("exerciseTitle");
 
     function toggleCamera() {
       if (!cameraOn) {
+        // Pokreni QR skener
         qrReader.style.display = "block";
         instructions.style.display = "none";
-        videoPlayer.style.display = "none";
-        button.textContent = "⏹ Zatvori kameru";
 
-        if (!html5QrcodeScanner) {
-          html5QrcodeScanner = new Html5Qrcode("qr-reader");
-        }
+        html5QrScanner = new Html5Qrcode("qr-reader");
 
-        html5QrcodeScanner.start(
+        html5QrScanner.start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
+          {
+            fps: 10,
+            qrbox: 250
+          },
           qrCodeMessage => {
-            // QR kod detektovan
-            html5QrcodeScanner.stop().then(() => {
-              qrReader.style.display = "none";
-            }).catch(console.error);
-
-            // Pokreni video na osnovu QR koda (npr. vezba=1)
-            const match = qrCodeMessage.match(/vezba=(\d+)/);
-            const vezbaNum = match ? match[1] : "1";
-
-            exerciseTitle.textContent = `Vežba ${vezbaNum}`;
-            videoPlayer.src = `videos/vezba${vezbaNum}.mp4`;
-            videoPlayer.style.display = "block";
-
-            button.textContent = "▶ Pokreni vežbu";
-            cameraOn = false;
+            // QR kod je prepoznat
+            const code = qrCodeMessage.trim();
+            handleQRCode(code);
+            stopCamera();
+          },
+          errorMessage => {
+            // ne radi ništa, samo greške u konzoli
+            console.log("QR scan error:", errorMessage);
           }
-        ).catch(console.error);
+        ).catch(err => {
+          alert("Kamera nije dostupna ili dozvola nije data.");
+        });
 
+        button.textContent = "⏹ Zatvori kameru";
         cameraOn = true;
-      } else {
-        html5QrcodeScanner.stop().then(() => {
-          qrReader.style.display = "none";
-        }).catch(console.error);
 
-        instructions.style.display = "grid";
-        videoPlayer.style.display = "none";
-        button.textContent = "▶ Pokreni vežbu";
-        cameraOn = false;
+      } else {
+        stopCamera();
+      }
+    }
+
+    function stopCamera() {
+      if (html5QrScanner) {
+        html5QrScanner.stop().then(() => {
+          html5QrScanner.clear();
+        }).catch(err => console.log(err));
+      }
+      qrReader.style.display = "none";
+      instructions.style.display = "grid";
+      button.textContent = "▶ Pokreni vežbu";
+      cameraOn = false;
+    }
+
+    function handleQRCode(code) {
+      // Primer: code = "vezba1", "vezba2" ...
+      const match = code.match(/vezba(\d+)/i);
+      if (match) {
+        const num = match[1];
+        exerciseTitle.textContent = `Vežba ${num}`;
+        videoPlayer.src = `videos/vezba${num}.mp4`;
+        videoPlayer.style.display = "block";
+        videoPlayer.play();
+      } else {
+        alert("Nepoznat QR kod");
       }
     }
   </script>
