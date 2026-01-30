@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Laboratorijske vežbe</title>
 
-  <!-- MindAR.js biblioteka -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.7/dist/mindar-image.prod.js"></script>
-
   <style>
     * { box-sizing: border-box; }
     body {
@@ -32,11 +29,14 @@
     }
     h1 { font-size: 22px; margin: 0; }
     .subtitle { font-size: 14px; opacity: 0.85; }
-    .exercise-title {
-      margin: 14px 0 18px;
+    .exercise-title { margin: 14px 0 18px; font-size: 16px; font-weight: 600; color: #aeeaff; }
+    select {
+      width: 100%;
+      padding: 12px;
       font-size: 16px;
-      font-weight: 600;
-      color: #aeeaff;
+      border-radius: 12px;
+      border: none;
+      margin-bottom: 16px;
     }
     button {
       width: 100%;
@@ -48,6 +48,7 @@
       background: linear-gradient(135deg, #00e0ff, #4facfe);
       color: #002b36;
       cursor: pointer;
+      margin-bottom: 16px;
     }
     video { width: 100%; border-radius: 16px; display: none; margin-top: 16px; }
     .footer { margin-top: 16px; font-size: 12px; opacity: 0.7; }
@@ -55,12 +56,17 @@
 </head>
 <body>
   <div class="app">
-    <div class="header">
-      <h1>Laboratorijske vežbe</h1>
-      <div class="subtitle">Multimedijalni edukativni sadržaj</div>
-    </div>
+    <h1>Laboratorijske vežbe</h1>
+    <div class="subtitle">Multimedijalni edukativni sadržaj</div>
 
     <div class="exercise-title" id="exerciseTitle">Izaberite laboratorijsku vežbu</div>
+
+    <select id="exerciseSelect">
+      <option value="1">Vežba 1: Merenje pH vrednosti vode</option>
+      <option value="2">Vežba 2: Ispitivanje kvaliteta vode</option>
+      <option value="3">Vežba 3: Rad sa EC senzorom</option>
+      <!-- Dodaj do 25 vežbi -->
+    </select>
 
     <button id="startBtn">▶ Pokreni vežbu</button>
 
@@ -72,45 +78,27 @@
   <script>
     const startBtn = document.getElementById("startBtn");
     const videoPlayer = document.getElementById("videoPlayer");
+    const exerciseSelect = document.getElementById("exerciseSelect");
     const exerciseTitle = document.getElementById("exerciseTitle");
+    let stream = null;
 
     startBtn.addEventListener("click", async () => {
-      startBtn.disabled = true;
+      const selected = exerciseSelect.value;
+      exerciseTitle.textContent = `Vežba ${selected}`;
 
-      // Pokretanje MindAR-a
-      const mindarThree = new window.MINDAR.IMAGE.MindARThree({
-        container: document.body,
-        imageTargetSrc: "markers/targets.mind",
-        uiScanning: true,
-        uiLoading: true,
-      });
-      const {renderer, scene, camera} = mindarThree;
-
-      // Za svaki marker dodajemo video
-      const videoElements = {};
-      for (let i = 1; i <= 25; i++) {
-        const video = document.createElement("video");
-        video.src = `videos/vezba${i}.mp4`;
-        video.crossOrigin = "anonymous";
-        video.loop = false;
-        video.muted = false;
-        video.style.display = "none";
-        document.body.appendChild(video);
-        videoElements[`vezba${i}`] = video;
+      // Pokreni kameru
+      if (!stream) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        } catch (err) {
+          alert("Kamera nije dostupna ili dozvola nije data.");
+          return;
+        }
       }
 
-      // MindAR event: marker prepoznat
-      mindarThree.on("targetFound", (targetIndex) => {
-        const code = `vezba${targetIndex+1}`;
-        exerciseTitle.textContent = `Vežba ${targetIndex+1}`;
-        const video = videoElements[code];
-        if (video) {
-          video.style.display = "block";
-          video.play();
-        }
-      });
-
-      await mindarThree.start();
+      videoPlayer.src = `videos/vezba${selected}.mp4`;
+      videoPlayer.style.display = "block";
+      videoPlayer.play();
     });
   </script>
 </body>
